@@ -1,0 +1,4 @@
+sensori:
+  config : {'tilt_mid': 0.0, 'tilt_min': -0.85, 'tilt_max':0.85, 'tilt_45': -0.4,
+          'pan_mid': -0.056, 'pan_min':-0.85, 'pan_max':0.85, 'pan_45': -0.58,
+          'motor_cnt':2}
