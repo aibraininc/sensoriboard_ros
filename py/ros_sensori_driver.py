@@ -93,8 +93,8 @@ class ros_sensori_driver:
     def setMotorConfig(self, motors):
         motors.set_voltage_limit([0.18, 0.18])
         motors.start()
-        motors.set_pos_ctrl_params(0, Kp = 0.9, Ki = 1.0, Kd = 0.008, deadband = 0.04, pulse_threshold = 0.10)
-        motors.set_pos_ctrl_params(1, Kp = 0.9, Ki = 1.0, Kd = 0.008, deadband = 0.04, pulse_threshold = 0.10)
+        motors.set_pos_ctrl_params(0, Kp = 1.9, Ki = 1.0, Kd = 0.008, deadband = 0.04, pulse_threshold = 0.05)
+        motors.set_pos_ctrl_params(1, Kp = 1.9, Ki = 1.0, Kd = 0.008, deadband = 0.04, pulse_threshold = 0.05)
         # motors.set_pos_ctrl_params(0, Kp = 1.8, Ki = 0, Kd = 0.05, deadband = 0.00, pulse_threshold = 0.00)
         # motors.set_pos_ctrl_params(1, Kp = 1.8, Ki = .8, Kd = 0.03, deadband = 0.00, pulse_threshold = 0.00)
 
