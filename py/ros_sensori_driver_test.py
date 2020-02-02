@@ -21,14 +21,13 @@ class ROS_Sensorimotor:
         self.calibPos = 0
         motors.set_pos_ctrl_params(self.config['motor_id'], Kp = self.config['kp'], Ki = self.config['ki'], Kd = self.config['kd'], deadband = self.config['deadband'], pulse_threshold = self.config['pulse_threshold'])
 
-        #print(self.config['calib_0']+self.config['calib_180'])
-    #randian to [-1, 1]
 
     def load_params_from_yaml(self, path):
         f = open(path, 'r')
         yamlfile = load(f)
         return yamlfile
-    #sensorival
+
+    #Converts Radian to Sensorival
     def radToSensori(self, radVal):
         #1. rad / 3.14159  = percentage
         #2. percentage * 2 or range = [0-2]
@@ -38,7 +37,7 @@ class ROS_Sensorimotor:
 
         return senVal
 
-    #rad value
+    #Converts Sensorivalue to Radian
     def sensoriToRad(self, sensoriVal):
         # [-1 1] +1 = [0 2]
         # /2 or range = percentage
@@ -46,13 +45,13 @@ class ROS_Sensorimotor:
         radVal = (self.normSensori(sensoriVal))/(self.config['act_max'] - self.config['act_min']) * self.config['act_rad']
         return radVal
 
-    #return 0 to max_range
+    #converts [-1 to 1] (sensoriboard originally)in to [0 to 2] starts from zero
     def normSensori(self, rawSensoriVal):
         # make it start from 0 to max range
         normSensoriVal = rawSensoriVal + abs(self.config['act_min'])
         return normSensoriVal
 
-    #return act_min to act_max
+    #converts [0 to 2] into [-1 to 1]
     def unnormSensori(self, normSensoriVal):
         rawSensoriVal = normSensoriVal - abs(self.config['act_min'])
         return rawSensoriVal
@@ -64,7 +63,6 @@ class ROS_Sensorimotor:
         calibRadMin = radMid - abs(calibRange)/2
         calibRad = rawRad + calibRadMin
         return calibRad
-    # reads uncalib radian change it to calibrated value
 
     # goes back to original scale
     def unCalibRadbyMid(self, calibRad, calibRange):
@@ -76,6 +74,7 @@ class ROS_Sensorimotor:
 
     #Calib input to sensori value
     #HeadAction [-+RAD] -->[+-RAD] --> Sensori [+- 1]
+    #Add min-max check, but not necessary yet
     def calibHead (self, input_calib, calibRange):
         mid_sensori = self.config['calib_mid']
         mid_uncalib_rad = self.sensoriToRad(mid_sensori)
@@ -84,7 +83,6 @@ class ROS_Sensorimotor:
         goal_uncalib_rad = self.changeScale(goal_calib)
         goal_sensori = self.radToSensori(goal_uncalib_rad)
         return goal_sensori
-
 
     #Sensori [+- 1] --> [+- RAD] --> Pub [-+ RAD]
     #return calib
@@ -97,21 +95,6 @@ class ROS_Sensorimotor:
         goal_calib = input_calib_rad - mid_calib_rad
         return goal_calib
 
-    def calibRadbyMid2(self, rawRad, calibRange):
-        sensoriMid = self.config['calib_mid']
-        radMid = self.changeScale(self.sensoriToRad(sensoriMid))
-        radMid = (self.sensoriToRad(sensoriMid))
-
-        calibRad = rawRad + radMid
-        return calibRad
-
-    def unCalibRadbyMid2(self, rawRad, calibRange):
-        sensoriMid = self.config['calib_mid']
-        radMid =  (self.sensoriToRad(sensoriMid))
-        calibRadMin = radMid - abs(calibRange)
-        calibRad = rawRad - radMid
-        return calibRad
-
     #Changes scale of the radian
     #30 degrees can be 150 degree with 180 range
     def changeScale(self, rad):
@@ -119,7 +102,13 @@ class ROS_Sensorimotor:
         changedRad = range_rad - rad
         return changedRad
 
-
+    #does min, max change 
+    def checkMinMaxRad(self, rad):
+        min_rad = self.config['limit_min']
+        max_rad = self.config['limit_max']
+        rad = max([rad, min_rad])
+        rad = min([rad, max_rad])
+        return rad
     #getPos
     #calError
     #setPos
