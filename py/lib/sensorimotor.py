@@ -22,7 +22,7 @@ from time import sleep
 # lib = cdll.LoadLibrary('../bin/libsensorimotor.so')
 
 import rospkg
-ckpt_path = rospkg.RosPack().get_path('pan_tilt_controller')+'/libsensorimotor/bin/libsensorimotor.so'
+ckpt_path = rospkg.RosPack().get_path('sensoriboard_ros')+'/bin/libsensorimotor.so'
 lib = cdll.LoadLibrary(ckpt_path)
 
 class Sensorimotor(object):
