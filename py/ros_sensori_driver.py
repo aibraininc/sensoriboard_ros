@@ -9,10 +9,113 @@ from std_msgs.msg import Float32MultiArray
 from rosparam import upload_params
 from yaml import load
 
-def load_params_from_yaml(path):
-    f = open(path, 'r')
-    yamlfile = load(f)
-    return yamlfile
+
+class ROS_Sensorimotor:
+    def __init__(self, name, motors):
+        print("Starting ROS Sensorimotor Driver "+"[" + name +"]")
+        self.name = name
+        pkg_path = rospkg.RosPack().get_path('sensoriboard_ros')
+        self.config = self.load_params_from_yaml(pkg_path+'/py/motor_param_test.yaml')['sensori'][self.name]
+        self.rawPosRad = 0
+        self.cmdPosRad = 0
+        self.calibPos = 0
+        motors.set_pos_ctrl_params(self.config['motor_id'], Kp = self.config['kp'], Ki = self.config['ki'], Kd = self.config['kd'], deadband = self.config['deadband'], pulse_threshold = self.config['pulse_threshold'])
+
+
+    def load_params_from_yaml(self, path):
+        f = open(path, 'r')
+        yamlfile = load(f)
+        return yamlfile
+
+    #Converts Radian to Sensorival
+    def radToSensori(self, radVal):
+        #1. rad / 3.14159  = percentage
+        #2. percentage * 2 or range = [0-2]
+        #3. [0-2] - 1 = [-1 - 1]
+        senVal = radVal / self.config['act_rad'] * (self.config['act_max'] - self.config['act_min'])
+        senVal = self.unnormSensori(senVal)
+
+        return senVal
+
+    #Converts Sensorivalue to Radian
+    def sensoriToRad(self, sensoriVal):
+        # [-1 1] +1 = [0 2]
+        # /2 or range = percentage
+        # 3.14159 or actual degree * percentage
+        radVal = (self.normSensori(sensoriVal))/(self.config['act_max'] - self.config['act_min']) * self.config['act_rad']
+        return radVal
+
+    #converts [-1 to 1] (sensoriboard originally)in to [0 to 2] starts from zero
+    def normSensori(self, rawSensoriVal):
+        # make it start from 0 to max range
+        normSensoriVal = rawSensoriVal + abs(self.config['act_min'])
+        return normSensoriVal
+
+    #converts [0 to 2] into [-1 to 1]
+    def unnormSensori(self, normSensoriVal):
+        rawSensoriVal = normSensoriVal - abs(self.config['act_min'])
+        return rawSensoriVal
+
+    # decides center of the head, center would be calibRange/2
+    def calibRadbyMid(self, rawRad, calibRange):
+        sensoriMid = self.config['calib_mid']
+        radMid = self.sensoriToRad(sensoriMid)
+        calibRadMin = radMid - abs(calibRange)/2
+        calibRad = rawRad + calibRadMin
+        return calibRad
+
+    # goes back to original scale
+    def unCalibRadbyMid(self, calibRad, calibRange):
+        sensoriMid = self.config['calib_mid']
+        radMid = self.sensoriToRad(sensoriMid)
+        calibRadMin = radMid - abs(calibRange)/2
+        rawRad = calibRad - calibRadMin
+        return rawRad
+
+    #Calib input to sensori value
+    #HeadAction [-+RAD] -->[+-RAD] --> Sensori [+- 1]
+    #Add min-max check, but not necessary yet
+    def calibHead (self, input_calib, calibRange):
+        mid_sensori = self.config['calib_mid']
+        mid_uncalib_rad = self.sensoriToRad(mid_sensori)
+        mid_calib_rad = self.changeScale(mid_uncalib_rad)
+        goal_calib = input_calib + mid_calib_rad
+        goal_uncalib_rad = self.changeScale(goal_calib)
+        goal_sensori = self.radToSensori(goal_uncalib_rad)
+        return goal_sensori
+
+    #Sensori [+- 1] --> [+- RAD] --> Pub [-+ RAD]
+    #return calib
+    def uncalibHead(self, input_sensori, calibRange):
+        mid_sensori = self.config['calib_mid']
+        mid_uncalib_rad = self.sensoriToRad(mid_sensori)
+        mid_calib_rad = self.changeScale(mid_uncalib_rad)
+        input_rad  = self.sensoriToRad(input_sensori)
+        input_calib_rad = self.changeScale(input_rad)
+        goal_calib = input_calib_rad - mid_calib_rad
+        return goal_calib
+
+    #Changes scale of the radian
+    #30 degrees can be 150 degree with 180 range
+    def changeScale(self, rad):
+        range_rad = self.config['act_rad']
+        changedRad = range_rad - rad
+        return changedRad
+
+    #does min, max change 
+    def checkMinMaxRad(self, rad):
+        min_rad = self.config['limit_min']
+        max_rad = self.config['limit_max']
+        rad = max([rad, min_rad])
+        rad = min([rad, max_rad])
+        return rad
+    #getPos
+    #calError
+    #setPos
+    #Radto [-1-1]
+    #[-1, 1] to []
+    #check limit
+    #
 
 pan_global = 0
 tilt_global = 0
@@ -20,89 +123,80 @@ tilt_global = 0
 degree_45 =  0.785398
 
 pkg_path = rospkg.RosPack().get_path('sensoriboard_ros')
-config = load_params_from_yaml(pkg_path+'/config/motor_param.yaml')['sensori']['config']
-
-def reverseTransformAngle(motor_num, motor_pos):
-    pan_rate = (config['pan_45'] - config['pan_mid']) / degree_45
-    tilt_rate = (config['tilt_45'] - config['tilt_mid']) / degree_45
-
-    ret = 0
-    if motor_num == 0: # pan
-        ret =  (motor_pos - config['pan_mid']) / pan_rate
-    elif motor_num == 1:
-        ret = (motor_pos -  config['tilt_mid']) / tilt_rate
-    return ret
-
-# radian to [-1,1]
-def transformAngle(motor_num, motor_radian):
-
-    pan_rate = (config['pan_45'] - config['pan_mid']) / degree_45
-    tilt_rate = (config['tilt_45'] - config['tilt_mid']) / degree_45
-    print(pan_rate, tilt_rate)
-
-    ret = 0
-    if motor_num == 0: # pan
-        ret = pan_rate *  motor_radian + config['pan_mid']
-    elif motor_num == 1:
-        ret = tilt_rate * motor_radian + config['tilt_mid']
-    return ret
-
-def cutPosition(_min, _max, val):
-    if val > _max:
-        val = _max
-    if val < _min:
-        val = _min
-    return val
-
-class ros_sensori_driver:
+class ROS_Sensorimotors:
     def __init__(self):
-        print(config)
-        self.motors = Sensorimotor(number_of_motors= config['motor_cnt'], verbose=False)
-        self.setMotorConfig(self.motors)
-        self.jointPub = rospy.Publisher("joint/poses", Float32MultiArray, queue_size = 10)
-        rospy.Subscriber("joint/cmd", Float32MultiArray, self.cmdCallback, queue_size = 10)
-        # create timer
-        rospy.Timer(rospy.Duration(0.1), self.updateTimerCallback)
+        #Sensorimotor related Init
+        print "Initializing Sensorimotors"
+        self.motors = Sensorimotor(number_of_motors= 2, verbose=False)
+        self.motors.set_voltage_limit([0.18, 0.18])
+        self.motors.start()
+        self.motors.set_pos_ctrl_params(0, Kp = 0.9, Ki = 1.0, Kd = 0.008, deadband = 0.04, pulse_threshold = 0.10)
+        self.motors.set_pos_ctrl_params(1, Kp = 0.9, Ki = 1.0, Kd = 0.008, deadband = 0.04, pulse_threshold = 0.10)
 
+
+        self.pan_motor= ROS_Sensorimotor("pan", self.motors)
+        self.tilt_motor= ROS_Sensorimotor("tilt", self.motors)
+
+        #ROS related inits
+        self.jointPub = rospy.Publisher("joint/poses", Float32MultiArray, queue_size = 10)
+
+
+        self.unCalibjointPub = rospy.Publisher("/joint/uncalib/poses", Float32MultiArray, queue_size = 10)
+
+        rospy.Subscriber("joint/cmd", Float32MultiArray, self.cmdCallback, queue_size = 10)
+        rospy.Timer(rospy.Duration(0.1), self.calibjointPubCallback)
+        rospy.Timer(rospy.Duration(0.1), self.unCalibjointPubCallback)
+        print "Waiting for Commands"
+
+    #Gets commands
     def cmdCallback(self, cmd):
-        global pan_global, tilt_global
-        pan  = transformAngle(0, cmd.data[0])
-        tilt  = transformAngle(1, cmd.data[1])
-        pan = cutPosition(config['pan_min'], config['pan_max'], pan)
-        tilt = cutPosition(config['tilt_min'], config['tilt_max'], tilt)
-        pan_global = pan
-        tilt_global = tilt
-        print("--- cmd callback ---")
-        print(pan_global, tilt_global)
+        print "taking commands from user"
+        #a = test.radToSensori(test.calibRadbyMid(0.785398,1.57 ))
+        pan = self.pan_motor.calibHead(cmd.data[0], 1.57)
+        tilt = self.tilt_motor.calibHead(cmd.data[1], 1.57)
+        print(pan )
+        print(tilt )
 
         self.motors.set_position([pan, tilt])
 
-    def updateTimerCallback(self,event):
-        global pan_global, tilt_global
+    #Publish joints
+    def calibjointPubCallback(self,event):
+        #print "publishing"
         joints = Float32MultiArray()
         values = self.motors.get_position()
         values_origin = [values[0], values[1]] # pan, tilt
-        pan = reverseTransformAngle(0,values[0])
-        tilt = reverseTransformAngle(1,values[1])
-        joints.data = [pan, tilt, values_origin[0], values_origin[1]]
-        self.jointPub.publish(joints)
-        # print("--- updateTimerCallback ---")
-        # print(values_origin[0], values_origin[1])
-        print 'error : '+str(pan_global-values_origin[0])+', '+ str(tilt_global-values_origin[1])
+        #print(test.unCalibRadbyMid(test.sensoriToRad(values[0]),1.57))
+        #pan = self.pan_motor.unCalibRadbyMid(2.87979-self.pan_motor.sensoriToRad(values[0]), 1.57)
+        pan = self.pan_motor.uncalibHead(values[0], 1.57)
+        tilt = self.tilt_motor.uncalibHead(values[1], 1.57)
 
-    def setMotorConfig(self, motors):
-        motors.set_voltage_limit([0.18, 0.18])
-        motors.start()
-        motors.set_pos_ctrl_params(0, Kp = 1.9, Ki = 1.0, Kd = 0.008, deadband = 0.04, pulse_threshold = 0.05)
-        motors.set_pos_ctrl_params(1, Kp = 1.9, Ki = 1.0, Kd = 0.008, deadband = 0.04, pulse_threshold = 0.05)
-        # motors.set_pos_ctrl_params(0, Kp = 1.8, Ki = 0, Kd = 0.05, deadband = 0.00, pulse_threshold = 0.00)
-        # motors.set_pos_ctrl_params(1, Kp = 1.8, Ki = .8, Kd = 0.03, deadband = 0.00, pulse_threshold = 0.00)
+        #tilt = self.tilt_motor.unCalibRadbyMid(2.87979-self.tilt_motor.sensoriToRad(values[1]), 1.57)
+        joints.data = [ pan,  tilt, values_origin[0], values_origin[1]]
+        print joints
+        self.jointPub.publish(joints)
+
+    def unCalibjointPubCallback(self,event):
+        #print "publishing"
+        joints = Float32MultiArray()
+        values = self.motors.get_position()
+        values_origin = [values[0], values[1]] # pan, tilt
+
+        #print(test.unCalibRadbyMid(test.sensoriToRad(values[0]),1.57))
+
+        pan = self.pan_motor.sensoriToRad(values[0])
+        tilt = self.tilt_motor.sensoriToRad(values[1])
+        joints.data = [pan, tilt, values_origin[0], values_origin[1]]
+        self.unCalibjointPub.publish(joints)
+
 
 def main():
     rospy.init_node('sensori_driver', anonymous=True)
-    motorDriver = ros_sensori_driver()
+    motorDriver = ROS_Sensorimotors()
     N = motorDriver.motors.ping()
+    #motorDriver.motors.set_position([0.0, 0.0])
     print("Found {0} sensorimotors.".format(N))
+    #motorDriver.motors.set_position([0.0, 0.0])
+
     sleep(1.0)
     try:
         while not rospy.is_shutdown():
@@ -116,7 +210,6 @@ def main():
         raise
     print("____\nDONE.")
     motorDriver.motors.stop()
-
 
 if __name__ == "__main__":
     main()
