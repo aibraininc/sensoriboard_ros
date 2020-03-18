@@ -38,7 +38,6 @@ The terminal returns two values. The first value is the raw pan positon and the 
 Use the 
 [cols="a,a,a,a"]
 |====
-| *Image*
 | image::IMG_7295.jpg[320,240] | image::IMG_7296.jpg[320,240] | image::IMG_7297.jpg[320,240] | image::IMG_7298.jpg[320,240] 
 |====
 
