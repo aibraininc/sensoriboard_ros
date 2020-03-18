@@ -1,0 +1,133 @@
+= Sensorimotor calibration with ROS for Gretchen Head 
+Doc Writer <wwchung91@gmail.com>
+v0.1, 2019-03-28
+:imagesdir: ./images
+:toc:
+
+_This is the manual for calibrating motors using sensoriboards to ROS.
+Following these steps will enable you to calibrate sensoriboards with ROS._
+
+[cols="a,a"]
+|====
+| image::before_assembly.png[Gretchen head] | image::after_assembly.png[Gretchen head]
+|====
+
+
+
+=== Recommended Tools
+You will need these to calibrate.
+
+Should have picture
+
+* Motor with sensoriboard
+* Computer 
+
+== Step 0. Find document document about the motor
+We need to find the max travel distance of the motor. For example, you can find the max travel distance at https://www.servocity.com/hs-81.
+For HS-81 and HS-82MG the max travel distance is 165 degree and 2.87979 in radian
+
+== Step 1. Find the raw encoder values of the motor 
+
+=== Step 1.1 Connect the sensorimotor and run 
+	python example_current_pos.py
+The terminal returns two values. The first value is the raw pan positon and the second value is the raw tilt position 
+
+
+=== Step 1.2 Get the min and max value of the pan and tilt by moving the robot head left and right with your hands
+[cols="a"]
+|====
+| *Image*
+| image::IMG_7295.jpg[320,240] | image::IMG_7296.jpg[320,240] | image::IMG_7297.jpg[320,240] | image::IMG_7298.jpg[320,240] |
+|====
+
+=== Step 1.3 Open Tools-> Board ""-> ArdunioNano
+
+=== Step 1.4 Select Tools-> Processor ATMega328P (Old Bootloader)
+
+=== Step 1.5 Select the usb port that the Ardunio is connected in Tools-> Port ""
+
+=== Step 1.6 Press compile and upload
+
+
+== Step 2. Set up the ISP hardware
+
+=== Step 2.1 Connect Arduino to computer
+
+=== Step 2.2 Connect Arduino to breadboard
+
+=== Step 2.3 Use cables to connect Arduino with sensoriboard
+[cols="a,a,a"]
+|====
+| *Arduino* | *Sensoriboard* | *Description*
+| image::boardisp.jpg[320,240] | image::ispsensori.jpg[320,240] |* Arduino D13 to Sensoriboard SCK
+* Arduino D12 to Sensoriboard MISO
+* Arduino D11 to Sensoriboard MOSI
+* Arduino D10 to Sensoriboard RESET
+* Arduino VCC (5V) to Sensoriboard VCC
+* Arduino GND to Sensoriboard GND
+* Arduino RESET to 10 uf capacitor to Ardunio GND (GND is -, RESET is +)
+|====
+
+== Step 3. Flash sensoriboard with ISP
+=== Step 3.1 Download the library
+  git clone https://github.com/aibraininc/sensoriboard-package.git
+
+=== Step 3.2 Install XPCC
+
+Install basic build system
+
+  sudo apt-get install python python-jinja2 scons git
+
+Install AVR toolchain
+
+  sudo apt-get install gcc-avr binutils-avr avr-libc avrdude
+
+Install ARM toolchain
+
+  sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
+  sudo apt-get update
+  sudo apt-get install gcc-arm-embedded openocd
+
+Install packets
+
+  sudo apt-get install gcc build-essential libboost-thread-dev \
+                       libboost-system-dev libasio-dev
+
+Install xpcc
+
+  cd <path-to-sensoriboard-package>/sensorimotor/embedded
+  git clone https://github.com/roboterclubaachen/xpcc.git
+
+=== Step 3.3 Test with blinky. Sensoriboard should blink
+  cd <path-to-sensoriboard-package>/sensorimotor/embedded/blinky
+  make; make install;
+  
+Check if sensoriboard is blinking rapidly.
+
+=== Step 3.4 Flash sensoriboard
+  cd <path-to-sensoriboard-package>/sensorimotor/embedded/firmware
+  scons program
+
+== Step 4. Set motor ID
+=== Step 4.1 Disconnect usb cable connecting ISP with computer
+=== Step 4.2 Connect RS485 cable with computer and the sensoriboard
+[cols="a"]
+|====
+| *Image*
+| image::IMG_6006.jpg[320,240]
+|====
+
+=== Step 4.3 Run program to set ID
+  cd <path-to-sensoriboard-package>/sensorimotor/embedded/tools
+  ./set_id.py -p /dev/ttyUSB0 -b oldID -n newID
+  ./set_id.py -p /dev/ttyUSB0 -b 127 -n 0
+  *Default motor ID is 127.
+
+=== Step 4.4 Test motor
+  
+  cd <path-to-sensoriboard-package>/libsensorimotor/py
+  python example_pos_ctrl.py
+  python example_imp_ctrl.py
+  * For testing motor control, you should follow instruction on libsensorimotor repo.
+  * Please build shared lib and set low_latency mode.
+
