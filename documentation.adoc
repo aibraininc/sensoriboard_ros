@@ -1,7 +1,7 @@
 = Sensorimotor calibration with ROS for Gretchen Head 
 Doc Writer <wwchung91@gmail.com>
 v0.1, 2019-03-28
-:imagesdir: ./images
+:imagesdir: ./image
 :toc:
 
 _This is the manual for calibrating motors using sensoriboards to ROS.
