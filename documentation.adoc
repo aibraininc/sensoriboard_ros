@@ -22,7 +22,7 @@ Should have picture
 * Motor with sensoriboard
 * Computer 
 
-== Step 0. Find document document about the motor
+== Step 0. Find document about the motor
 We need to find the max travel distance of the motor. For example, you can find the max travel distance at https://www.servocity.com/hs-81.
 For HS-81 and HS-82MG the max travel distance is 165 degree and 2.87979 in radian
 
@@ -49,7 +49,7 @@ Open py/motor_param_test.yaml
 
 For both pan and tilt
 
-* Update act_rad with the max travel distance of the motor we found at Step 0. 
+* Update act_rad with the max travel distance of the motor (in radians) we found at Step 0. 
 * Update act_min with the min value for pan or tilt we found at step 1.2 
 * Update act_max with the max value for pan or tilt we found at step 1.2 
 
