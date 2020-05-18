@@ -1,10 +1,10 @@
 sensori:
         
-  tilt : {'motor_id': 0, 'kp': 0.4, 'ki': 1.0, 'kd': 0.05, 'deadband': 0.04, 'pulse_threshold': 0.10,
+  tilt : {'motor_id': 0, 'kp': 0.35, 'ki': 0.2, 'kd': 0.01, 'deadband': 0.00, 'pulse_threshold': 0.1,
           'limit_volt': 0.18,
           'act_rad': 2.87979, 'act_min': -0.894, 'act_max': 0.943 ,'calib_mid': -0.168, 'motor_cnt': 2}
   
-  pan : {'motor_id': 1, 'kp': 0.4, 'ki': 1.0, 'kd': 0.05, 'deadband': 0.04, 'pulse_threshold': 0.10,
+  pan : {'motor_id': 1, 'kp': 0.35, 'ki': 0.2, 'kd': 0.01, 'deadband': 0.00, 'pulse_threshold': 0.1,
           'limit_volt': 0.18,
           'act_rad': 2.87979, 'act_min': -0.863, 'act_max': 0.892, 'calib_mid': 0.146,'motor_cnt': 2}
 

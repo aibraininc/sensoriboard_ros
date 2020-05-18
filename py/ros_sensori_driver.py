@@ -128,7 +128,7 @@ class ROS_Sensorimotors:
         #Sensorimotor related Init
         print "Initializing Sensorimotors"
         self.motors = Sensorimotor(number_of_motors= 2, verbose=False)
-        self.motors.set_voltage_limit([0.12, 0.12])
+        self.motors.set_voltage_limit([0.15, 0.15])
         self.motors.start()
 
 
