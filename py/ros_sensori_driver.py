@@ -128,10 +128,8 @@ class ROS_Sensorimotors:
         #Sensorimotor related Init
         print "Initializing Sensorimotors"
         self.motors = Sensorimotor(number_of_motors= 2, verbose=False)
-        self.motors.set_voltage_limit([0.18, 0.18])
+        self.motors.set_voltage_limit([0.12, 0.12])
         self.motors.start()
-        self.motors.set_pos_ctrl_params(0, Kp = 0.9, Ki = 1.0, Kd = 0.008, deadband = 0.04, pulse_threshold = 0.10)
-        self.motors.set_pos_ctrl_params(1, Kp = 0.9, Ki = 1.0, Kd = 0.008, deadband = 0.04, pulse_threshold = 0.10)
 
 
         self.pan_motor= ROS_Sensorimotor("pan", self.motors)
@@ -139,8 +137,6 @@ class ROS_Sensorimotors:
 
         #ROS related inits
         self.jointPub = rospy.Publisher("joint/poses", Float32MultiArray, queue_size = 10)
-
-
         self.unCalibjointPub = rospy.Publisher("/joint/uncalib/poses", Float32MultiArray, queue_size = 10)
 
         rospy.Subscriber("joint/cmd", Float32MultiArray, self.cmdCallback, queue_size = 10)
