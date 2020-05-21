@@ -17,8 +17,7 @@ Should have picture
 * Computer
 
 == Step 0. Find document about the motor
-We need to find the max travel distance of the motor. For example, you can find the max travel distance at https://www.servocity.com/hs-81.
-For HS-81 and HS-82MG the max travel distance is 165 degree and 2.87979 in radian
+We need to find the travel distance of the motor in 180 degree. For mg996 motor calibration, we assume the max travel distance is 180 degree and 3.141592 in radian
 
 == Step 1. Find the raw encoder values of the motor
 
@@ -35,22 +34,22 @@ For HS-81 and HS-82MG the max travel distance is 165 degree and 2.87979 in radia
 The terminal returns two values. The first value is the raw pan positon and the second value is the raw tilt position
 
 
-=== Step 1.2 Get the min and max value of the pan and tilt by moving the robot head left, right, up, down with your hands.
+=== Step 1.2 Get the 90 degree, -90 degree value and center (0 degree) of the pan and tilt by moving the robot head left, right, up, down with your hands.
 
 [cols="a,a,a,a"]
 |====
-| image::IMG_7295.jpg[320,240] | image::IMG_7296.jpg[320,240] | image::IMG_7297.jpg[320,240] | image::IMG_7298.jpg[320,240]
+| image::image9.png[320,240] | image::image1.png[320,240] | image::image13.png[320,240] | image::image4.png[320,240]
 |====
 
-The values printed on the terminal will be used as min, max for pan and tilt.
+The values printed on the terminal will be used as act_min, act_max parameters for pan and tilt.
 
-Also please make robot look at center. The value on the terminal will be used calib_mid for pan and tilt.
+Also please make robot look at center. The value on the terminal will be used as calib_mid parameter for pan and tilt.
 
 === Step 1.3 Update the configuration file
 
 [cols="a"]
 |====
-| image::param.png[640]
+| image::img-param.png[640]
 |====
 
 

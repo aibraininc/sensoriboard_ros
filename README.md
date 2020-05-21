@@ -1,5 +1,5 @@
 # Manual for calibration
-https://github.com/aibraininc/sensoriboard_ros/blob/master/documentation.adoc
+https://github.com/aibraininc/sensoriboard_ros/blob/mg996/documentation.adoc
 
 # [RUN PROJECT]
 
