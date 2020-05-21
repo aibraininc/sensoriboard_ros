@@ -1,4 +1,4 @@
-= Sensorimotor calibration with ROS for Gretchen Head 
+= Sensorimotor calibration with ROS for Gretchen Head
 Doc Writer <wwchung91@gmail.com>
 v0.1, 2019-03-28
 :imagesdir: ./image
@@ -7,12 +7,6 @@ v0.1, 2019-03-28
 _This is the manual for calibrating motors using sensoriboards to ROS.
 Following these steps will enable you to calibrate sensoriboards with ROS._
 
-[cols="a,a"]
-|====
-| image::before_assembly.png[Gretchen head] | image::after_assembly.png[Gretchen head]
-|====
-
-
 
 === Recommended Tools
 You will need these to calibrate.
@@ -20,37 +14,65 @@ You will need these to calibrate.
 Should have picture
 
 * Motor with sensoriboard
-* Computer 
+* Computer
 
 == Step 0. Find document about the motor
 We need to find the max travel distance of the motor. For example, you can find the max travel distance at https://www.servocity.com/hs-81.
 For HS-81 and HS-82MG the max travel distance is 165 degree and 2.87979 in radian
 
-== Step 1. Find the raw encoder values of the motor 
+== Step 1. Find the raw encoder values of the motor
 
-=== Step 1.1 Connect the sensorimotor and run 
-	python example_current_pos.py
+=== Step 1.1 Connect the sensorimotor and run
+  cd ~/your_grethcen_sdk/sensoriboard_ros
 
-The terminal returns two values. The first value is the raw pan positon and the second value is the raw tilt position 
+	python get_current_pos.py
+
+[cols="a"]
+|====
+| image::raw-values.png[320,240]
+|====
+
+The terminal returns two values. The first value is the raw pan positon and the second value is the raw tilt position
 
 
-=== Step 1.2 Get the min and max value of the pan and tilt by moving the robot head left, right, up, down with your hands. 
+=== Step 1.2 Get the min and max value of the pan and tilt by moving the robot head left, right, up, down with your hands.
 
 [cols="a,a,a,a"]
 |====
-| image::IMG_7295.jpg[320,240] | image::IMG_7296.jpg[320,240] | image::IMG_7297.jpg[320,240] | image::IMG_7298.jpg[320,240] 
+| image::IMG_7295.jpg[320,240] | image::IMG_7296.jpg[320,240] | image::IMG_7297.jpg[320,240] | image::IMG_7298.jpg[320,240]
 |====
 
 The values printed on the terminal will be used as min, max for pan and tilt.
 
-=== Step 1.3 Update the configuration file 
+Also please make robot look at center. The value on the terminal will be used calib_mid for pan and tilt.
+
+=== Step 1.3 Update the configuration file
+
+[cols="a"]
+|====
+| image::param.png[640]
+|====
+
 
 Open py/motor_param_test.yaml
 
 For both pan and tilt
 
-* Update act_rad with the max travel distance of the motor (in radians) we found at Step 0. 
-* Update act_min with the min value for pan or tilt we found at step 1.2 
-* Update act_max with the max value for pan or tilt we found at step 1.2 
+* Update act_rad with the max travel distance of the motor (in radians) we found at Step 0.
+* Update act_min with the min value for pan or tilt we found at step 1.2
+* Update act_max with the max value for pan or tilt we found at step 1.2
+* Update calib_mid with the value for pan or tilt we found at step 1.2
 
-	
+=== Step 1.4 Check calibration using simulation UI.
+
+If you install gretchen sdk, you can check motor calibration with simulation UI.
+
+	roslaunch course_material init_device.launch
+
+Once you move a robot with your hands, a simulation robot move with same motion. For example, if you move the robot for looking at 90 degree, the simulation robot looks at the same direction.
+
+
+[cols="a,a"]
+|====
+| image::img-00.png[320,240] | image::img-90.png[320,240]
+|====
