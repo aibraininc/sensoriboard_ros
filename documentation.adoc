@@ -57,7 +57,7 @@ Open py/motor_param_test.yaml
 
 For both pan and tilt
 
-* Update act_rad with the max travel distance of the motor (in radians) we found at Step 0.
+* Update act_rad with the max travel distance of the motor (in radians) we found at Step 0. If you use MG996 motor, act_rad is 3.141592 (180 degrees).
 * Update act_min with the the value when angle is -90 degrees for pan or tilt we found at step 1.2.
 * Update act_max with the the value when angle is 90 degree for pan or tilt we found at step 1.2. 
 * Update calib_mid with the value when angle is 0 degree for pan or tilt we found at step 1.2.
