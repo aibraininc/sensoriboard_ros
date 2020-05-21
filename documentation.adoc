@@ -34,7 +34,7 @@ We need to find the travel distance of the motor in 180 degree. For mg996 motor 
 The terminal returns two values. The first value is the raw pan positon and the second value is the raw tilt position
 
 
-=== Step 1.2 Get the 90 degree, -90 degree value and center (0 degree) of the pan and tilt by moving the robot head left, right, up, down with your hands.
+=== Step 1.2 Get the 90 degree, -90 degree value and 0 degree of the pan and tilt by moving the robot head left, right, up, down with your hands.
 
 [cols="a,a,a,a"]
 |====
