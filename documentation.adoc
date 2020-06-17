@@ -63,7 +63,7 @@ For both pan and tilt
 * Update act_max with the max value for pan or tilt we found at step 1.2
 * Update calib_mid with the value for pan or tilt we found at step 1.2
 
-=== Step 1.4 Check calibration using simulation UI.
+== Step 2. Check calibration using simulation UI.
 
 If you install gretchen sdk, you can check motor calibration with simulation UI.
 
