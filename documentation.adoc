@@ -7,6 +7,10 @@ v0.1, 2019-03-28
 _This is the manual for calibrating motors using sensoriboards to ROS.
 Following these steps will enable you to calibrate sensoriboards with ROS._
 
+You can see a video how to calibrate sensoriboards.
+video: https://www.youtube.com/watch?v=HhXYhhRhuFk[How to calibrate sensoriboards]
+
+
 
 === Recommended Tools
 You will need these to calibrate.
