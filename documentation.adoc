@@ -20,7 +20,7 @@ We need to find the max travel of the motor. For example, you can find the max t
 For HS-81 and HS-82MG the max travel is 165 degree and 2.87979 in radian
 
 == Step 1. Find the raw encoder values of the motor
-https://www.youtube.com/watch?v=HhXYhhRhuFk[click here to watch the video tutorial for step 0 ~ step 1]
+https://www.youtube.com/watch?v=HhXYhhRhuFk[click here to watch the video tutorial for step 1 ~ step 2]
 
 === Step 1.1 Connect the sensorimotor and run
   cd ~/your_grethcen_sdk/sensoriboard_ros
